@@ -1,16 +1,40 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Get Script</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Script Loader</title>
+<style>
+  body { background: #0d0d0d; color: #ccc; font-family: monospace; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+  .card { background: #111; border: 1px solid #222; border-radius: 10px; padding: 20px; max-width: 520px; width: 90%; }
+  pre { background: #0a0a0a; border-radius: 8px; padding: 16px; overflow-x: auto; font-size: 13px; line-height: 1.6; margin: 0; }
+  .copy { margin-top: 12px; background: #1a1a2e; color: #7b8cde; border: 1px solid #2a2a4e; border-radius: 6px; padding: 7px 18px; cursor: pointer; font-family: monospace; font-size: 13px; }
+  .copy:hover { background: #2a2a4e; }
+  .kw { color: #c792ea; }
+  .str { color: #c3e88d; }
+  .com { color: #546e7a; font-style: italic; }
+  .num { color: #f78c6c; }
+</style>
 </head>
-<body style="text-align:center; margin-top:100px; font-family:sans-serif;">
-    <h1>Streaming Script</h1>
-    <button onclick="getScript()">Get Loader</button>
+<body>
+<div class="card">
+  <pre><code id="code"></code></pre>
+  <button class="copy">Copy</button>
+</div>
 
-    <script>
-        function getScript() {
-            window.location.href = "/api/loader";
-        }
-    </script>
+<script>
+const luaSource =
+`script_key = "KEYLESS"; -- A key might be required, if not, delete this line.
+loadstring(game:HttpGet("https://my-knife.vercel.app/api/loader"))()
+`;
+
+function escapeHTML(e){return e.replace(/[&<>]/g,e=>({"&":"&amp;","<":"&lt;",">":"&gt;"})[e])}
+function highlightLua(e){let t=escapeHTML(e),n=/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g,a=[],l=0,c;for(;c=n.exec(t);)c.index>l&&a.push({t:"code",v:t.slice(l,c.index)}),a.push({t:"str",v:c[0]}),l=n.lastIndex;l<t.length&&a.push({t:"code",v:t.slice(l)});let s=/\b(local|function|end|if|then|else|elseif|for|while|repeat|until|return|not|and|or|do|in|true|false|nil)\b/g,r=/\b(loadstring|game|HttpGet)\b/g,i=/\b(\d+(?:\.\d+)?)\b/g;function o(e){return e.replace(i,"<span class=num>$1</span>").replace(s,"<span class=kw>$1</span>").replace(r,"<span class=kw>$1</span>")}return a.map(e=>{var t;return"str"===e.t?"<span class=str>"+e.v+"</span>":(t=e.v).split("\n").map(e=>{let t=e.indexOf("--");if(-1===t)return o(e);let n=o(e.slice(0,t)),a=e.slice(t);return n+"<span class=com>"+a+"</span>"}).join("\n")}).join("")}
+
+const codeEl=document.getElementById("code");
+function flash(e){let t=document.querySelector(".copy"),n=t.textContent;t.textContent=e,setTimeout(()=>t.textContent=n,900)}
+codeEl.innerHTML=highlightLua(luaSource);
+document.querySelector(".copy").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(luaSource),flash("Copied!")}catch{let e=document.createElement("textarea");e.value=luaSource,document.body.appendChild(e),e.select();try{document.execCommand("copy"),flash("Copied!")}catch{}e.remove()}});
+</script>
 </body>
 </html>
